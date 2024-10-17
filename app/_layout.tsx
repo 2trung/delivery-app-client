@@ -1,37 +1,38 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native'
+import { useFonts } from 'expo-font'
+import { Stack } from 'expo-router'
+import { useEffect, useState } from 'react'
+import useUser from '@/store/userSlice'
+import useAuth from '@/store/authSlice'
+import { useRouter } from 'expo-router'
+import * as SplashScreen from 'expo-splash-screen'
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-
+SplashScreen.preventAutoHideAsync()
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+  const router = useRouter()
+  const { getUser } = useUser()
+  const { isLogin } = useAuth()
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+    getUser()
+  }, [])
 
-  if (!loaded) {
-    return null;
-  }
+  useEffect(() => {
+    if (!isLogin) {
+      if (router.canGoBack()) router.replace('../')
+      else router.replace('/')
+    } else router.replace('/(tabs)/Home')
+    SplashScreen.hideAsync()
+  }, [isLogin])
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
+    <ThemeProvider value={DefaultTheme}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name='index' />
+        <Stack.Screen name='(auth)' />
+        <Stack.Screen name='(tabs)' />
+        <Stack.Screen name='+not-found' />
       </Stack>
     </ThemeProvider>
-  );
+  )
 }
