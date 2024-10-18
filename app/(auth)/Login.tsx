@@ -58,7 +58,7 @@ const Login = () => {
     try {
       await login(phoneNumber, password)
       await getUser()
-      router.replace('/(home)/')
+      router.replace('/(tabs)/Home')
     } catch (error: any) {
       // console.log(error)
     }
