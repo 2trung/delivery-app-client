@@ -7,6 +7,8 @@ export default function TabLayout() {
     <Tabs
       screenOptions={({ route }) => ({
         headerShown: false,
+        tabBarHideOnKeyboard: true,
+
         tabBarStyle: {
           height: Platform.OS === 'ios' ? 88 : 68,
           justifyContent: 'center',

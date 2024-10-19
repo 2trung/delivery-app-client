@@ -3,7 +3,9 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native'
 import { TextInput } from 'react-native-paper'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { FontAwesome, Entypo } from '@expo/vector-icons'
+import { useRouter } from 'expo-router'
 const Home = () => {
+  const route = useRouter()
   const [greeting, setGreeting] = useState('')
   useEffect(() => {
     const getGreeting = () => {
@@ -93,7 +95,9 @@ const Home = () => {
             elevation: 5,
           }}
         >
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => route.push('/booking_bike/SelectLocation')}
+          >
             <View
               style={{
                 backgroundColor: '#E5F9D4',
