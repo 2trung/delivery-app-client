@@ -1,33 +1,30 @@
-import { Coordinates } from '@/type/coordinates'
 import axios from '@/utils/axiosInstance'
+import { GEOAPIFY_KEY, GEOAPIFY_URL } from '@env'
+import { LatLng } from 'react-native-maps'
 
-const autocomplete = async (input: string, userLocation: Coordinates) => {
-  // const geoapifyKey = process.env.GEOAPIFY_KEY
-  const geoapifyKey = 'a43328fe7a084c0983d312b74a3ea003'
+const autocomplete = async (input: string, userLocation: LatLng) => {
   const response = await axios.get(
-    `/autocomplete?text=${input}&lang=vi&bias=proximity:${userLocation.longitute},${userLocation.latitute}&filter=circle:105.85372617648932,21.028679425355676,20000&format=json&apiKey=${geoapifyKey}`,
+    `/autocomplete?text=${input}&lang=vi&bias=proximity:${userLocation.longitude},${userLocation.latitude}&filter=circle:105.85372617648932,21.028679425355676,20000&format=json&apiKey=${GEOAPIFY_KEY}`,
     {
-      // baseURL: process.env.GEOAPIFY_URL,
-      baseURL: 'https://api.geoapify.com/v1/geocode/',
+      baseURL: GEOAPIFY_URL,
     }
   )
   return response.data
 }
 
-const reverse = async (lat: string, lon: string) => {
-  const geoapifyKey = process.env.GEOAPIFY_KEY
+const reverse = async (coordinate: LatLng) => {
   const response = await axios.get(
-    `/reverse?lat=${lat}&lon=${lon}&lang=vi&limit=1&format=json&apiKey=${geoapifyKey}`,
+    `/reverse?lat=${coordinate.latitude}&lon=${coordinate.longitude}&lang=vi&limit=1&format=json&apiKey=${GEOAPIFY_KEY}`,
     {
-      baseURL: process.env.GEOAPIFY_URL,
+      baseURL: GEOAPIFY_URL,
     }
   )
   return response.data
 }
 
-const getRoute = async (origin: Coordinates, destination: Coordinates) => {
+const getRoute = async (origin: LatLng, destination: LatLng) => {
   const response = await axios.get(
-    `/route?origin=${origin.latitute},${origin.longitute}&destination=${destination.latitute},${destination.longitute}`
+    `/route?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}`
   )
   return response.data
 }

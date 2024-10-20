@@ -19,9 +19,9 @@ import { TextInput } from 'react-native-paper'
 import { autocomplete } from '@/api/mapAPI'
 import debounce from 'lodash.debounce'
 import { Key, useEffect, useRef, useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Coordinates } from '@/type/coordinates'
+import { useQuery } from '@tanstack/react-query'
 import useLocation from '@/store/locationSlice'
+import { LatLng } from 'react-native-maps'
 
 const formatDistance = (distance: number) => {
   if (distance < 1000) {
@@ -33,21 +33,57 @@ const formatDistance = (distance: number) => {
 
 const SelectLocation = () => {
   const router = useRouter()
-  const queryClient = useQueryClient()
-  const { userLocation, origin, destination, setDestination } = useLocation()
+  const { userLocation, origin, destination, setDestination, setOrigin } =
+    useLocation()
   const [query, setQuery] = useState('')
+  const [originAddress, setOriginAddress] = useState('')
   const [destinationAddress, setDestinationAddress] = useState('')
+  const [currentFocus, setCurrentFocus] = useState<'origin' | 'destination'>(
+    'origin'
+  )
 
   const handleSelectLocation = (location: any) => {
-    setDestination(location)
+    setQuery('')
+    if (currentFocus === 'origin') {
+      setOrigin({
+        latitude: location.lat,
+        longitude: location.lon,
+        address_line1: location.address_line1,
+        address_line2: location.address_line2,
+      })
+      setOriginAddress(location.address_line1)
+      if (destination) router.push('/booking_bike/Maps')
+      return
+    }
+    setDestination({
+      latitude: location.lat,
+      longitude: location.lon,
+      address_line1: location.address_line1,
+      address_line2: location.address_line2,
+    })
     setDestinationAddress(location.address_line1)
+    router.push('/booking_bike/Maps')
     // navigate to the next screen
   }
 
-  const handleOnChangeText = (text: string) => {
-    setDestination()
+  const handleFocus = (focus: 'origin' | 'destination') => {
+    setQuery('')
+    setCurrentFocus(focus)
+  }
+
+  const onChangeDestinationText = (text: string) => {
     debouncedSearch(text)
     setDestinationAddress(text)
+  }
+
+  const onChangeOriginText = (text: string) => {
+    debouncedSearch(text)
+    setOriginAddress(text)
+  }
+
+  const handleOnBlur = (blur: 'origin' | 'destination') => {
+    if (blur === 'origin') setOriginAddress(origin?.address_line1 || '')
+    else setDestinationAddress(destination?.address_line1 || '')
   }
 
   const debouncedSearch = useRef(
@@ -65,12 +101,13 @@ const SelectLocation = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['autocomplete', query],
     queryFn: () => {
-      return autocomplete(query, userLocation as Coordinates)
+      return autocomplete(query, userLocation as LatLng)
     },
     enabled: !!query,
   })
 
   useEffect(() => {
+    setOrigin()
     setDestination()
   }, [])
   return (
@@ -105,8 +142,11 @@ const SelectLocation = () => {
             outlineColor='#fff'
             activeOutlineColor='#fff'
             placeholder='Vị trí hiện tại'
-            // defaultValue='Đại học Xây dựng Hà Nội'
             placeholderTextColor={'#8E8E8E'}
+            onChangeText={onChangeOriginText}
+            value={originAddress}
+            onFocus={() => handleFocus('origin')}
+            onBlur={() => handleOnBlur('origin')}
           />
           <View style={styles.verticalDivider} />
           <TextInput
@@ -117,8 +157,10 @@ const SelectLocation = () => {
             activeOutlineColor='#fff'
             placeholder='Tìm điểm đến'
             placeholderTextColor={'#8E8E8E'}
-            onChangeText={handleOnChangeText}
+            onChangeText={onChangeDestinationText}
             value={destinationAddress}
+            onFocus={() => handleFocus('destination')}
+            onBlur={() => handleOnBlur('destination')}
           />
         </View>
       </View>
@@ -134,9 +176,10 @@ const SelectLocation = () => {
 
       <ScrollView
         style={{ flex: 1, marginTop: 10 }}
-        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
       >
-        {!destination &&
+        {((currentFocus === 'destination' && !destination) ||
+          (currentFocus === 'origin' && !origin)) &&
           data?.results.map((location: any, index: Key | null | undefined) => (
             <Pressable
               style={styles.locationContainer}

@@ -5,6 +5,7 @@ export default function BookingBikeLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name='SelectLocation' />
+      <Stack.Screen name='Maps' />
     </Stack>
   )
 }

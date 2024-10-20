@@ -30,8 +30,8 @@ export default function RootLayout() {
       setUserLocation({
         address_line1: '',
         address_line2: '',
-        latitute: location.coords.latitude,
-        longitute: location.coords.longitude,
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
       })
     }
     getLocation()
