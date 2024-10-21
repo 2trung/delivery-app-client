@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import {
   View,
@@ -7,6 +6,8 @@ import {
   TouchableOpacity,
   ScrollView,
   Pressable,
+  // TextInput,
+  Image,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import {
@@ -14,6 +15,9 @@ import {
   FontAwesome,
   AntDesign,
   FontAwesome5,
+  Ionicons,
+  Feather,
+  EvilIcons,
 } from '@expo/vector-icons'
 import { TextInput } from 'react-native-paper'
 import { autocomplete } from '@/api/mapAPI'
@@ -22,6 +26,7 @@ import { Key, useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import useLocation from '@/store/locationSlice'
 import { LatLng } from 'react-native-maps'
+import { images } from '@/constants'
 
 const formatDistance = (distance: number) => {
   if (distance < 1000) {
@@ -33,18 +38,32 @@ const formatDistance = (distance: number) => {
 
 const SelectLocation = () => {
   const router = useRouter()
-  const { userLocation, origin, destination, setDestination, setOrigin } =
-    useLocation()
+  const {
+    userLocation,
+    origin,
+    destination,
+    addDestination,
+    removeDestination,
+    clearDestination,
+    setOrigin,
+    removeDestinations,
+    setDestination,
+  } = useLocation()
   const [query, setQuery] = useState('')
   const [originAddress, setOriginAddress] = useState('')
-  const [destinationAddress, setDestinationAddress] = useState('')
-  const [currentFocus, setCurrentFocus] = useState<'origin' | 'destination'>(
-    'origin'
-  )
+  const [destinationAddress, setDestinationAddress] = useState<string[]>([''])
+  const [currentFocus, setCurrentFocus] = useState<{
+    type: 'origin' | 'destination'
+    index: number
+  }>({ type: 'destination', index: 0 })
+  const destinationImage = [
+    images.destinationWhite1,
+    images.destinationWhite2,
+    images.destinationWhite3,
+  ]
 
   const handleSelectLocation = (location: any) => {
-    setQuery('')
-    if (currentFocus === 'origin') {
+    if (currentFocus.type === 'origin') {
       setOrigin({
         latitude: location.lat,
         longitude: location.lon,
@@ -52,38 +71,52 @@ const SelectLocation = () => {
         address_line2: location.address_line2,
       })
       setOriginAddress(location.address_line1)
-      if (destination) router.push('/booking_bike/Maps')
-      return
+    } else if (currentFocus.type === 'destination') {
+      const newDestination = [...destinationAddress]
+      newDestination[currentFocus.index ?? 0] = location.address_line1
+      setDestinationAddress(newDestination)
+      setDestination(
+        {
+          latitude: location.lat,
+          longitude: location.lon,
+          address_line1: location.address_line1,
+          address_line2: location.address_line2,
+        },
+        currentFocus.index ?? 0
+      )
     }
-    setDestination({
-      latitude: location.lat,
-      longitude: location.lon,
-      address_line1: location.address_line1,
-      address_line2: location.address_line2,
-    })
-    setDestinationAddress(location.address_line1)
-    router.push('/booking_bike/Maps')
-    // navigate to the next screen
   }
 
-  const handleFocus = (focus: 'origin' | 'destination') => {
-    setQuery('')
-    setCurrentFocus(focus)
+  // Nhập địa chỉ
+  const handleFocus = (type: 'origin' | 'destination', index: number) => {
+    if (type === 'origin') setQuery(originAddress)
+    else setQuery(destinationAddress[index ?? 0])
+    setCurrentFocus({ type, index })
   }
 
-  const onChangeDestinationText = (text: string) => {
+  // Thay đổi những địa chỉ đến
+  const onChangeDestinationText = (text: string, index: number) => {
     debouncedSearch(text)
-    setDestinationAddress(text)
+    setDestinationAddress((prev) => {
+      const newDestination = [...prev]
+      newDestination[index] = text
+      return newDestination
+    })
   }
 
+  // Thay đổi địa chỉ đi
   const onChangeOriginText = (text: string) => {
     debouncedSearch(text)
     setOriginAddress(text)
   }
 
-  const handleOnBlur = (blur: 'origin' | 'destination') => {
-    if (blur === 'origin') setOriginAddress(origin?.address_line1 || '')
-    else setDestinationAddress(destination?.address_line1 || '')
+  const handleOnBlur = (type: 'origin' | 'destination', index?: number) => {
+    if (type === 'origin' && origin) setOriginAddress(origin.address_line1)
+    if (type === 'destination' && index !== undefined && destination[index]) {
+      const newDestination = [...destinationAddress]
+      newDestination[index] = destination[index].address_line1
+      setDestinationAddress(newDestination)
+    }
   }
 
   const debouncedSearch = useRef(
@@ -105,13 +138,35 @@ const SelectLocation = () => {
     },
     enabled: !!query,
   })
+  const handleDeleteDestination = (index: number) => {
+    if (currentFocus.type === 'destination' && currentFocus.index === index) {
+      setQuery('')
+      setCurrentFocus({ type: 'destination', index: index })
+    }
+    const newDestinationAddress = [...destinationAddress]
+    newDestinationAddress.splice(index, 1)
+    setDestinationAddress(newDestinationAddress)
+    removeDestination(index)
+  }
+
+  const handleClearDestination = (index: number) => {
+    setQuery('')
+    const newDestination = [...destinationAddress]
+    newDestination[index] = ''
+    setDestinationAddress(newDestination)
+    clearDestination(index)
+  }
+  useEffect(() => {
+    if (destination.every(Boolean)) router.push('/booking_bike/Maps')
+  }, [destination, origin])
 
   useEffect(() => {
     setOrigin()
-    setDestination()
+    removeDestinations()
   }, [])
   return (
     <SafeAreaView style={styles.container}>
+      {/* Tiêu đề & quay lại */}
       <View style={styles.titleContainer}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name='chevron-back' size={24} color='black' />
@@ -119,53 +174,127 @@ const SelectLocation = () => {
         <Text style={styles.title}>Bạn muốn đi đâu?</Text>
       </View>
 
+      {/* Chọn vị trí */}
       <View style={styles.selectLocationsContainer}>
-        <View style={{ padding: 12, paddingRight: 0 }}>
+        <View style={{ padding: 12, paddingRight: 0, alignItems: 'center' }}>
           <FontAwesome name='arrow-circle-up' size={28} color='#009112' />
-          <View style={styles.horizontalDivider} />
-          <View style={styles.iconContainer}>
-            <MaterialIcons name='location-on' size={16} color='#fff' />
-          </View>
+          {destinationAddress.length === 1
+            ? destinationAddress.map((_, index) => (
+                <View key={index}>
+                  <View style={styles.horizontalDivider} />
+                  <View style={styles.iconContainer}>
+                    <Image
+                      source={images.destinationWhite}
+                      style={{ width: 16, height: 16, resizeMode: 'contain' }}
+                    />
+                  </View>
+                </View>
+              ))
+            : destinationAddress.map((_, index) => (
+                <View key={index}>
+                  <View style={styles.horizontalDivider} />
+                  <View style={styles.iconContainer}>
+                    <Image
+                      source={destinationImage[index]}
+                      style={{ width: 16, height: 16, resizeMode: 'contain' }}
+                    />
+                  </View>
+                </View>
+              ))}
         </View>
         <View
           style={{
-            marginLeft: 0,
+            // marginLeft: 10,
             width: '90%',
             paddingVertical: 6,
-            justifyContent: 'space-between',
+            // justifyContent: 'space-between',
           }}
         >
           <TextInput
-            style={styles.input}
-            cursorColor={'black'}
-            mode='outlined'
-            outlineColor='#fff'
-            activeOutlineColor='#fff'
+            style={{ ...styles.input, width: '100%' }}
+            cursorColor='black'
             placeholder='Vị trí hiện tại'
-            placeholderTextColor={'#8E8E8E'}
+            placeholderTextColor='#8E8E8E'
+            mode='outlined'
+            outlineColor='transparent'
+            activeOutlineColor='transparent'
             onChangeText={onChangeOriginText}
             value={originAddress}
-            onFocus={() => handleFocus('origin')}
+            onFocus={() => handleFocus('origin', -1)}
             onBlur={() => handleOnBlur('origin')}
+            right={
+              originAddress &&
+              currentFocus.type === 'origin' && (
+                <TextInput.Icon
+                  icon='close-circle'
+                  size={16}
+                  color='#414b52'
+                  onPress={() => {
+                    setQuery('')
+                    setOriginAddress('')
+                  }}
+                />
+              )
+            }
           />
-          <View style={styles.verticalDivider} />
-          <TextInput
-            style={styles.input}
-            cursorColor={'black'}
-            mode='outlined'
-            outlineColor='#fff'
-            activeOutlineColor='#fff'
-            placeholder='Tìm điểm đến'
-            placeholderTextColor={'#8E8E8E'}
-            onChangeText={onChangeDestinationText}
-            value={destinationAddress}
-            onFocus={() => handleFocus('destination')}
-            onBlur={() => handleOnBlur('destination')}
-          />
+
+          {destinationAddress.map((_, index) => (
+            <View key={index}>
+              <View style={styles.verticalDivider} />
+              <View style={{ justifyContent: 'center' }}>
+                <TextInput
+                  style={styles.input}
+                  cursorColor='black'
+                  placeholder='Tìm điểm đến'
+                  placeholderTextColor='#8E8E8E'
+                  mode='outlined'
+                  outlineColor='#fff'
+                  activeOutlineColor='#fff'
+                  onChangeText={(text) => onChangeDestinationText(text, index)}
+                  value={destinationAddress[index]}
+                  onFocus={() => handleFocus('destination', index)}
+                  onBlur={() => handleOnBlur('destination', index)}
+                  right={
+                    destinationAddress[index] &&
+                    currentFocus.type === 'destination' &&
+                    currentFocus?.index === index && (
+                      <TextInput.Icon
+                        icon='close-circle'
+                        size={16}
+                        color='#414b52'
+                        onPress={() => handleClearDestination(index)}
+                      />
+                    )
+                  }
+                />
+                {destinationAddress.length > 1 && (
+                  <TouchableOpacity
+                    onPress={() => handleDeleteDestination(index)}
+                    style={{
+                      position: 'absolute',
+                      right: '5%',
+                    }}
+                  >
+                    {/* <Feather name='x' size={24} color='black' /> */}
+                    <EvilIcons name='trash' size={24} color='red' />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          ))}
         </View>
       </View>
       <View style={styles.additionButtonContainer}>
-        <TouchableOpacity style={styles.addLoctionButton}>
+        <TouchableOpacity
+          style={{
+            ...styles.addLocationButton,
+            display: destinationAddress.length > 2 ? 'none' : 'flex',
+          }}
+          onPress={() => {
+            addDestination()
+            setDestinationAddress([...destinationAddress, ''])
+          }}
+        >
           <AntDesign name='plus' size={18} color='#596169' />
           <Text style={{ color: '#596169' }}>Thêm điểm đến</Text>
         </TouchableOpacity>
@@ -174,12 +303,14 @@ const SelectLocation = () => {
         </TouchableOpacity>
       </View>
 
+      {/* Danh sách vị trí */}
       <ScrollView
         style={{ flex: 1, marginTop: 10 }}
         showsVerticalScrollIndicator={false}
       >
-        {((currentFocus === 'destination' && !destination) ||
-          (currentFocus === 'origin' && !origin)) &&
+        {((currentFocus.type === 'destination' &&
+          !destination[currentFocus.index]) ||
+          (currentFocus.type === 'origin' && !origin)) &&
           data?.results.map((location: any, index: Key | null | undefined) => (
             <Pressable
               style={styles.locationContainer}
@@ -231,9 +362,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F96B00',
-    paddingVertical: 3.5,
     borderRadius: 100,
+    height: 24,
     width: 24,
+    margin: 1,
   },
   selectLocationsContainer: {
     // gap: 20,
@@ -252,12 +384,12 @@ const styles = StyleSheet.create({
   verticalDivider: {
     height: 1,
     backgroundColor: '#E8E8E8',
-    // marginVertical: 15,
+    marginVertical: 2,
     width: '90%',
     alignSelf: 'center',
   },
   horizontalDivider: {
-    height: 18,
+    height: 10,
     left: 12,
     borderStyle: 'dashed',
     borderLeftWidth: 1,
@@ -267,18 +399,18 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   input: {
-    height: 36,
+    height: 40,
     width: '90%',
-    padding: 0,
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
     fontSize: 18,
+    paddingLeft: 0,
   },
   additionButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     padding: 12,
   },
-  addLoctionButton: {
+  addLocationButton: {
     flexDirection: 'row',
     gap: 5,
     alignItems: 'center',

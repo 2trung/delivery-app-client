@@ -22,10 +22,12 @@ const reverse = async (coordinate: LatLng) => {
   return response.data
 }
 
-const getRoute = async (origin: LatLng, destination: LatLng) => {
-  const response = await axios.get(
-    `/route?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}`
-  )
+const getRoute = async (
+  origin: LatLng,
+  destination: LatLng,
+  stops: LatLng[]
+) => {
+  const response = await axios.post('/route', { origin, destination, stops })
   return response.data
 }
 

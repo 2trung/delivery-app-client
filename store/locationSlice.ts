@@ -10,10 +10,14 @@ interface Location {
 interface LocationState {
   userLocation: Location
   origin: Location | null
-  destination: Location | null
+  destination: (Location | null)[]
   searchResults: Location[]
   setUserLocation: (location: Location) => void
-  setDestination: (location?: Location) => void
+  addDestination: () => void
+  setDestination: (location: Location, index: number) => void
+  removeDestination: (index: number) => void
+  removeDestinations: () => void
+  clearDestination: (index: number) => void
   setOrigin: (location?: Location) => void
 }
 
@@ -25,12 +29,43 @@ const createLocation = create<LocationState>((set) => ({
     longitude: 0,
   },
   origin: null,
-  destination: null,
+  destination: [null],
   searchResults: [],
   setUserLocation: (location) =>
     set((state) => ({ ...state, userLocation: location })),
-  setDestination: (location) =>
-    set((state) => ({ ...state, destination: location })),
+  addDestination: () =>
+    set((state) => {
+      const newDestination = [...state.destination]
+      newDestination.push(null)
+      return { ...state, destination: newDestination }
+    }),
+  setDestination: (location, index) => {
+    set((state) => {
+      const newDestination = [...state.destination]
+      newDestination[index] = location
+      return { ...state, destination: newDestination }
+    })
+  },
+  removeDestination: (index) => {
+    set((state) => {
+      const newDestination = [...state.destination]
+      newDestination.splice(index, 1)
+      return { ...state, destination: newDestination }
+    })
+  },
+  removeDestinations: () => {
+    set((state) => ({
+      ...state,
+      destination: [null],
+    }))
+  },
+  clearDestination: (index) => {
+    set((state) => {
+      const newDestination = [...state.destination]
+      newDestination[index] = null
+      return { ...state, destination: newDestination }
+    })
+  },
   setOrigin: (location) => set((state) => ({ ...state, origin: location })),
 }))
 
