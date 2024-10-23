@@ -4,6 +4,7 @@ import { TextInput } from 'react-native-paper'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { FontAwesome, Entypo } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
+import { icons, images } from '@/constants'
 const Home = () => {
   const route = useRouter()
   const [greeting, setGreeting] = useState('')
@@ -106,13 +107,13 @@ const Home = () => {
               }}
             >
               <Image
-                source={require('@/assets/images/bike.png')}
+                source={icons.bike}
                 style={{ height: 50, width: 50, resizeMode: 'contain' }}
               />
             </View>
             <Text style={{ textAlign: 'center', marginTop: 5 }}>Đặt xe</Text>
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => route.push('/food/')}>
             <View
               style={{
                 backgroundColor: '#FAE3E2',
@@ -121,7 +122,7 @@ const Home = () => {
               }}
             >
               <Image
-                source={require('@/assets/images/food.png')}
+                source={icons.food}
                 style={{ height: 50, width: 50, resizeMode: 'contain' }}
               />
             </View>
@@ -136,7 +137,7 @@ const Home = () => {
               }}
             >
               <Image
-                source={require('@/assets/images/package.png')}
+                source={icons.packageIcon}
                 style={{ height: 50, width: 50, resizeMode: 'contain' }}
               />
             </View>
@@ -180,7 +181,7 @@ const Home = () => {
                 }}
               >
                 <Image
-                  source={require('@/assets/images/bike_white.png')}
+                  source={icons.bikeWhite}
                   style={{ height: 20, width: 20, resizeMode: 'contain' }}
                 />
               </View>
@@ -206,7 +207,7 @@ const Home = () => {
                 }}
               >
                 <Image
-                  source={require('@/assets/images/bike_white.png')}
+                  source={icons.bikeWhite}
                   style={{ height: 20, width: 20, resizeMode: 'contain' }}
                 />
               </View>
@@ -230,7 +231,7 @@ const Home = () => {
         </Text>
         <View>
           <Image
-            source={require('@/assets/images/banner1.png')}
+            source={images.banner1}
             style={{
               height: 200,
               width: '100%',

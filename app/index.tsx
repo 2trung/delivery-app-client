@@ -12,6 +12,7 @@ import { CountryPicker } from 'react-native-country-codes-picker'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import useAuth from '../store/authSlice'
+import { icons, images } from '../constants'
 
 const Index = () => {
   const router = useRouter()
@@ -128,18 +129,12 @@ const Index = () => {
 
       <View style={styles.socialLoginContainer}>
         <TouchableOpacity style={styles.socialLoginButton}>
-          <Image
-            style={{ height: 18, width: 18 }}
-            source={require('../assets/images/google-icon.png')}
-          />
+          <Image style={{ height: 18, width: 18 }} source={icons.google} />
           <Text style={styles.socialLoginButtonText}>Đăng nhập với Google</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.socialLoginButton}>
-          <Image
-            style={{ height: 18, width: 18 }}
-            source={require('../assets/images/facebook-icon.png')}
-          />
+          <Image style={{ height: 18, width: 18 }} source={icons.facebook} />
           <Text style={styles.socialLoginButtonText}>
             Đăng nhập với Facebook
           </Text>

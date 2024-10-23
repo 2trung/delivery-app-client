@@ -8,6 +8,7 @@ import {
   Pressable,
   // TextInput,
   Image,
+  BackHandler,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import {
@@ -26,7 +27,7 @@ import { Key, useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import useLocation from '@/store/locationSlice'
 import { LatLng } from 'react-native-maps'
-import { images } from '@/constants'
+import { icons } from '@/constants'
 
 const formatDistance = (distance: number) => {
   if (distance < 1000) {
@@ -57,9 +58,9 @@ const SelectLocation = () => {
     index: number
   }>({ type: 'destination', index: 0 })
   const destinationImage = [
-    images.destinationWhite1,
-    images.destinationWhite2,
-    images.destinationWhite3,
+    icons.destinationWhite1,
+    icons.destinationWhite2,
+    icons.destinationWhite3,
   ]
 
   const handleSelectLocation = (location: any) => {
@@ -156,19 +157,43 @@ const SelectLocation = () => {
     setDestinationAddress(newDestination)
     clearDestination(index)
   }
-  useEffect(() => {
-    if (destination.every(Boolean)) router.push('/booking_bike/Maps')
-  }, [destination, origin])
 
-  useEffect(() => {
+  const clearLocation = () => {
     setOrigin()
     removeDestinations()
+  }
+
+  useEffect(() => {
+    clearLocation()
+    const backAction = () => {
+      clearLocation()
+      router.back()
+      return true
+    }
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    )
+
+    return () => backHandler.remove() // Gỡ bỏ sự kiện khi component bị hủy
   }, [])
+
+  useEffect(() => {
+    if (destination.every(Boolean)) {
+      router.push('/booking_bike/Maps')
+    }
+  }, [destination, origin])
   return (
     <SafeAreaView style={styles.container}>
       {/* Tiêu đề & quay lại */}
       <View style={styles.titleContainer}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity
+          onPress={() => {
+            router.back()
+            clearLocation()
+          }}
+        >
           <Ionicons name='chevron-back' size={24} color='black' />
         </TouchableOpacity>
         <Text style={styles.title}>Bạn muốn đi đâu?</Text>
@@ -184,7 +209,7 @@ const SelectLocation = () => {
                   <View style={styles.horizontalDivider} />
                   <View style={styles.iconContainer}>
                     <Image
-                      source={images.destinationWhite}
+                      source={icons.destinationWhite}
                       style={{ width: 16, height: 16, resizeMode: 'contain' }}
                     />
                   </View>

@@ -16,7 +16,7 @@ import {
   MaterialIcons,
 } from '@expo/vector-icons'
 import BackButton from '@/components/BackButton'
-import { images } from '@/constants'
+import { icons } from '@/constants'
 
 const Maps = () => {
   const router = useRouter()
@@ -43,9 +43,9 @@ const Maps = () => {
   }, [data])
 
   const destinationPin = [
-    images.destinationPin1,
-    images.destinationPin2,
-    images.destinationPin3,
+    icons.destinationPin1,
+    icons.destinationPin2,
+    icons.destinationPin3,
   ]
 
   useEffect(() => {
@@ -79,14 +79,14 @@ const Maps = () => {
         {/* Vị trí điểm đi */}
         {(origin || userLocation) && (
           <Marker coordinate={origin || userLocation}>
-            <Image source={images.originPin} style={styles.customImageMarker} />
+            <Image source={icons.originPin} style={styles.customImageMarker} />
           </Marker>
         )}
         {/* Vị trí điểm đến */}
         {destination.length === 1 && destination[0] && (
           <Marker coordinate={destination[0] as LatLng}>
             <Image
-              source={images.destinationPin}
+              source={icons.destinationPin}
               style={styles.customImageMarker}
             />
           </Marker>

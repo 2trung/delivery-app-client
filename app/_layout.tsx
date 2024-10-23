@@ -9,6 +9,9 @@ import { useRouter } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import * as Location from 'expo-location'
+import { StatusBar } from 'expo-status-bar'
+import { reverse } from '@/api/mapAPI'
+import { LatLng } from 'react-native-maps'
 
 SplashScreen.preventAutoHideAsync()
 export default function RootLayout() {
@@ -27,9 +30,10 @@ export default function RootLayout() {
         return
       }
       const location = await Location.getCurrentPositionAsync({})
+      const specificLocation = await reverse(location.coords as LatLng)
       setUserLocation({
-        address_line1: '',
-        address_line2: '',
+        address_line1: specificLocation?.results[0]?.address_line1,
+        address_line2: specificLocation?.results[0]?.address_line2,
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
       })
@@ -38,16 +42,17 @@ export default function RootLayout() {
   }, [])
 
   useEffect(() => {
-    // if (!isLogin) {
-    //   if (router.canGoBack()) router.replace('../')
-    //   else router.replace('/')
-    // } else router.replace('/(tabs)/Home')
-    router.replace('/(tabs)/Home')
+    if (!isLogin) {
+      if (router.canGoBack()) router.replace('../')
+      else router.replace('/')
+    } else router.replace('/(tabs)/Home')
+    // router.replace('/(tabs)/Home')
     SplashScreen.hideAsync()
   }, [isLogin])
 
   return (
     <ThemeProvider value={DefaultTheme}>
+      <StatusBar style='dark' />
       <QueryClientProvider client={queryClient}>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name='index' />

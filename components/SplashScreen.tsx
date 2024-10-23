@@ -1,12 +1,10 @@
 import { View, Image, StyleSheet } from 'react-native'
+import { images } from '@/constants'
 
 const SplashScreen = () => {
   return (
     <View style={styles.container}>
-      <Image
-        style={styles.image}
-        source={require('@/assets/images/splash.png')}
-      ></Image>
+      <Image style={styles.image} source={images.splash}></Image>
     </View>
   )
 }
