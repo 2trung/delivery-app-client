@@ -1,14 +1,23 @@
-import { View, Image, Text, StyleSheet } from 'react-native'
+import { View, Image, Text, StyleSheet, Pressable } from 'react-native'
 import { AntDesign, Ionicons } from '@expo/vector-icons'
 import { Restaurant } from '@/types/type'
+import { useRouter } from 'expo-router'
 
 const HorizontalRestaurantCard = ({
   restaurant,
 }: {
   restaurant: Omit<Restaurant, 'categories'>
 }) => {
+  const router = useRouter()
   return (
-    <View>
+    <Pressable
+      onPress={() =>
+        router.navigate({
+          pathname: '/food/Restaurant',
+          params: { id: restaurant.id },
+        })
+      }
+    >
       <View style={styles.container}>
         <Image
           source={{
@@ -24,7 +33,7 @@ const HorizontalRestaurantCard = ({
           <View style={styles.deliveryContainer}>
             <View style={styles.deliveryTimeContainer}>
               <AntDesign name='star' size={16} color='#000' />
-              <Text>30-40 phút</Text>
+              <Text> 30-40 phút</Text>
             </View>
             <View style={styles.deliveryTime}>
               <Text>{restaurant.distance.toFixed(2)} km</Text>
@@ -33,7 +42,7 @@ const HorizontalRestaurantCard = ({
         </View>
         <View style={styles.restaurantNameContainer}>
           <View style={{ gap: 6 }}>
-            <Text numberOfLines={2} style={{ fontWeight: '700', fontSize: 16 }}>
+            <Text numberOfLines={1} style={{ fontWeight: '700', fontSize: 16 }}>
               {restaurant.name}
             </Text>
             <Text style={{ fontSize: 12, color: '#525453' }} numberOfLines={1}>
@@ -48,7 +57,7 @@ const HorizontalRestaurantCard = ({
           Giảm giá 30%, tối đa 100k
         </Text>
       </View>
-    </View>
+    </Pressable>
   )
 }
 

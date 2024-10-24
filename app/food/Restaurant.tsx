@@ -6,20 +6,73 @@ import {
   TouchableOpacity,
   FlatList,
   Animated,
+  Modal,
+  Pressable,
+  ScrollView,
 } from 'react-native'
 import { getRestaurantDetail } from '@/api/foodAPI'
 import { useQuery } from '@tanstack/react-query'
 import { icons } from '@/constants'
-import { AntDesign, Ionicons } from '@expo/vector-icons'
+import { AntDesign, Feather, Ionicons } from '@expo/vector-icons'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import VerticalFoodCard from '@/components/VerticalFoodCard'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Dimensions } from 'react-native'
+import { Food } from '@/types/type'
+import { Checkbox, RadioButton } from 'react-native-paper'
 
 const Restaurant = () => {
   const { id } = useLocalSearchParams()
   const router = useRouter()
+
+  const [modalVisible, setModalVisible] = useState(false)
+  const [currentFood, setCurrentFood] = useState<Food>()
+
+  const setCustomizeOptions = (
+    food: Food,
+    customizeId: string,
+    optionId: string
+  ) => {
+    const newCustomizes = food.customizes.map((customize) => {
+      if (customize.id === customizeId) {
+        const newOptions = customize.options.map((option) => {
+          if (customize.maximumChoices === 1) {
+            return {
+              ...option,
+              isSelected: option.id === optionId,
+            }
+          } else {
+            const selectedOptions = customize.options.filter(
+              (o) => o.isSelected
+            )
+            if (
+              !option.isSelected &&
+              selectedOptions.length >= customize.maximumChoices
+            )
+              return option
+            return {
+              ...option,
+              isSelected:
+                option.id === optionId ? !option.isSelected : option.isSelected,
+            }
+          }
+        })
+        return {
+          ...customize,
+          options: newOptions,
+        }
+      }
+      return customize
+    })
+    const newFood = { ...food, customizes: newCustomizes }
+    setCurrentFood(newFood)
+  }
+
+  const handleAddButtonPress = () => {
+    setModalVisible(true)
+  }
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['restaurantDetail'],
     queryFn: () => {
@@ -38,6 +91,196 @@ const Restaurant = () => {
 
   return (
     <View style={{ backgroundColor: '#fff' }}>
+      <Modal
+        animationType='slide'
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible)
+        }}
+      >
+        <View style={styles.modelOverlay}>
+          <View style={styles.modalView}>
+            <View style={{ alignItems: 'center', width: '100%' }}>
+              <Text style={{ fontSize: 16, fontWeight: '600' }}>Thêm món</Text>
+              <Pressable
+                onPress={() => setModalVisible(false)}
+                style={{ position: 'absolute', top: 0, right: 0 }}
+              >
+                <Feather name='x' size={28} color='#494b4a' />
+              </Pressable>
+            </View>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              style={{ marginTop: 10, paddingTop: 10 }}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: 10,
+                }}
+              >
+                <Image
+                  source={{ uri: currentFood?.image }}
+                  style={{ height: 150, width: 150, borderRadius: 20 }}
+                />
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: 'space-between',
+                    paddingVertical: 10,
+                  }}
+                >
+                  <Text
+                    numberOfLines={2}
+                    style={{
+                      flexWrap: 'wrap',
+                      fontSize: 16,
+                      fontWeight: '500',
+                    }}
+                  >
+                    {currentFood?.name}
+                  </Text>
+                  <Text style={{ fontSize: 12, color: '#666' }}>
+                    {currentFood?.likeCount} lượt thích
+                  </Text>
+
+                  <Text style={{ fontSize: 16, color: '#000', marginTop: 5 }}>
+                    {currentFood?.price.toLocaleString('vi')} đ
+                  </Text>
+
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      // justifyContent: 'center',
+                      alignItems: 'center',
+                      gap: 15,
+                    }}
+                  >
+                    <TouchableOpacity>
+                      <AntDesign
+                        name='minuscircleo'
+                        size={24}
+                        color='#00880c'
+                      />
+                    </TouchableOpacity>
+                    <Text style={{ fontWeight: '800' }}>1</Text>
+                    <TouchableOpacity>
+                      <AntDesign name='pluscircleo' size={24} color='#00880c' />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+              {currentFood?.customizes?.map((customize) => (
+                <View key={customize.id}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: '500',
+                      paddingTop: 15,
+                      paddingBottom: 5,
+                    }}
+                  >
+                    {customize.name}{' '}
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 'normal',
+                        color: '#666',
+                      }}
+                    >
+                      (
+                      {customize.minimumChoices === 0
+                        ? `Tuỳ chọn - tối đa ${customize.maximumChoices}`
+                        : `Chọn tối thiểu ${customize.minimumChoices}`}
+                      )
+                    </Text>
+                  </Text>
+                  {customize.minimumChoices === 0
+                    ? customize.options.map((option) => (
+                        <View
+                          key={option.id}
+                          style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <Checkbox
+                              status={
+                                currentFood?.customizes
+                                  .find((c) => c.id === customize.id)
+                                  ?.options.find((o) => o.id === option.id)
+                                  ?.isSelected
+                                  ? 'checked'
+                                  : 'unchecked'
+                              }
+                              onPress={() =>
+                                setCustomizeOptions(
+                                  currentFood,
+                                  customize.id,
+                                  option.id
+                                )
+                              }
+                              color='#00880c'
+                            />
+                            <Text>{option.name}</Text>
+                          </View>
+                          <Text>{option.price.toLocaleString('vi')} đ</Text>
+                        </View>
+                      ))
+                    : customize.options.map((option) => (
+                        <View
+                          key={option.id}
+                          style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <RadioButton
+                              key={option.id}
+                              value={option.id}
+                              status={
+                                currentFood?.customizes
+                                  .find((c) => c.id === customize.id)
+                                  ?.options.find((o) => o.id === option.id)
+                                  ?.isSelected
+                                  ? 'checked'
+                                  : 'unchecked'
+                              }
+                              onPress={() =>
+                                setCustomizeOptions(
+                                  currentFood,
+                                  customize.id,
+                                  option.id
+                                )
+                              }
+                              color='#00880c'
+                            />
+                            <Text>{option.name}</Text>
+                          </View>
+                          <Text>{option.price.toLocaleString('vi')} đ</Text>
+                        </View>
+                      ))}
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
       <View>
         <Image style={styles.cover} source={{ uri: data?.image }} />
         <Animated.View
@@ -112,7 +355,13 @@ const Restaurant = () => {
             <FlatList
               data={category.foods}
               keyExtractor={(food) => food.id.toString()}
-              renderItem={({ item }) => <VerticalFoodCard food={item} />}
+              renderItem={({ item }) => (
+                <VerticalFoodCard
+                  food={item}
+                  handleAddButtonPress={handleAddButtonPress}
+                  setCurrentFood={setCurrentFood}
+                />
+              )}
               numColumns={2}
               columnWrapperStyle={{
                 justifyContent: 'space-between',
@@ -128,7 +377,6 @@ const Restaurant = () => {
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 width: '100%',
-                alignContent: 'center',
                 gap: 10,
               }}
             >
@@ -194,6 +442,8 @@ const Restaurant = () => {
 }
 
 export default Restaurant
+
+const { height } = Dimensions.get('window')
 
 const styles = StyleSheet.create({
   cover: {
@@ -286,5 +536,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     fontSize: 12,
     elevation: 3,
+  },
+  modalView: {
+    // height: height * 0.5,
+    height: '80%',
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    // alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modelOverlay: {
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    height: '100%',
+    justifyContent: 'flex-end',
   },
 })

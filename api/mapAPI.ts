@@ -3,22 +3,32 @@ import { GEOAPIFY_KEY, GEOAPIFY_URL } from '@env'
 import { LatLng } from 'react-native-maps'
 
 const autocomplete = async (input: string, userLocation: LatLng) => {
-  const response = await axios.get(
-    `/autocomplete?text=${input}&lang=vi&bias=proximity:${userLocation.longitude},${userLocation.latitude}&filter=circle:105.85372617648932,21.028679425355676,20000&format=json&apiKey=${GEOAPIFY_KEY}`,
-    {
-      baseURL: GEOAPIFY_URL,
-    }
-  )
+  const response = await axios.get('/autocomplete', {
+    baseURL: GEOAPIFY_URL,
+    params: {
+      text: input,
+      lang: 'vi',
+      bias: `proximity:${userLocation.longitude},${userLocation.latitude}`,
+      filter: `circle:${userLocation.longitude},${userLocation.latitude},20000`,
+      format: 'json',
+      apiKey: GEOAPIFY_KEY,
+    },
+  })
   return response.data
 }
 
 const reverse = async (coordinate: LatLng) => {
-  const response = await axios.get(
-    `/reverse?lat=${coordinate.latitude}&lon=${coordinate.longitude}&lang=vi&limit=1&format=json&apiKey=${GEOAPIFY_KEY}`,
-    {
-      baseURL: GEOAPIFY_URL,
-    }
-  )
+  const response = await axios.get('/reverse', {
+    baseURL: GEOAPIFY_URL,
+    params: {
+      lang: 'vi',
+      limit: 1,
+      lat: coordinate.latitude,
+      lon: coordinate.longitude,
+      format: 'json',
+      apiKey: GEOAPIFY_KEY,
+    },
+  })
   return response.data
 }
 

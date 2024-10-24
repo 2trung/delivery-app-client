@@ -29,7 +29,22 @@ export interface Food {
   name: string
   orderCount: number
   likeCount: number
-  foodCustomizes: FoodCustomize[]
+  customizes: FoodCustomize[]
+}
+
+export interface FoodFlashSale {
+  id: string
+  name: string
+  image: string
+  price: number
+  oldPrice: number
+  orderCount: number
+  likeCount: number
+  restaurantId: string
+  restaurantName: string
+  restaurantAddress: string
+  restaurantLatitude: number
+  restaurantLongitude: number
 }
 
 export interface FoodCustomize {
@@ -37,7 +52,7 @@ export interface FoodCustomize {
   name: string
   minimumChoices: number
   maximumChoices: number
-  foodCustomizeOptions: FoodCustomizeOption[]
+  options: FoodCustomizeOption[]
 }
 
 export interface FoodCustomizeOption {
@@ -45,4 +60,11 @@ export interface FoodCustomizeOption {
   name: string
   price: number
   isDefault: boolean
+  isSelected: boolean | undefined
+}
+
+export interface FoodCollection {
+  id: string
+  name: string
+  image: string
 }

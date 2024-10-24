@@ -1,14 +1,14 @@
 import { Food } from '@/types/type'
-import { AntDesign } from '@expo/vector-icons'
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  Touchable,
-  TouchableOpacity,
-} from 'react-native'
-const VerticalFoodCard = ({ food }: { food: Food }) => {
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native'
+const VerticalFoodCard = ({
+  food,
+  handleAddButtonPress,
+  setCurrentFood,
+}: {
+  food: Food
+  handleAddButtonPress: () => void
+  setCurrentFood: (food: Food) => void
+}) => {
   return (
     <View
       style={styles.container}
@@ -48,25 +48,14 @@ const VerticalFoodCard = ({ food }: { food: Food }) => {
             )}
           </Text>
         </View>
-
-        {/* <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: 15,
-          }}
-        >
-          <TouchableOpacity>
-            <AntDesign name='minuscircleo' size={24} color='#00880c' />
-          </TouchableOpacity>
-          <Text style={{ fontWeight: '800' }}>1</Text>
-          <TouchableOpacity>
-            <AntDesign name='pluscircleo' size={24} color='#00880c' />
-          </TouchableOpacity>
-        </View> */}
       </View>
-      <TouchableOpacity style={styles.addButton}>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => {
+          setCurrentFood(food)
+          handleAddButtonPress()
+        }}
+      >
         <Text style={{ color: '#00880c', fontWeight: '800' }}>Thêm vào</Text>
       </TouchableOpacity>
     </View>

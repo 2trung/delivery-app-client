@@ -120,14 +120,31 @@ const Maps = () => {
           <View style={{ flexDirection: 'row', gap: 10 }}>
             <View style={{ padding: 12, paddingRight: 0 }}>
               <FontAwesome name='arrow-circle-up' size={28} color='#009112' />
-              <View style={styles.horizontalDivider} />
-              <View style={styles.iconContainer}>
-                <MaterialIcons name='location-on' size={16} color='#fff' />
-              </View>
+              {/* <View style={styles.horizontalDivider} /> */}
+              {destination.length === 1 ? (
+                <View>
+                  <View style={styles.horizontalDivider} />
+                  <View style={styles.iconContainer}>
+                    <MaterialIcons name='location-on' size={16} color='#fff' />
+                  </View>
+                </View>
+              ) : (
+                destination.map((item, index) => (
+                  <View key={index}>
+                    <View style={styles.horizontalDivider} />
+                    <View key={index} style={styles.iconContainer}>
+                      <Image
+                        source={destinationPin[index]}
+                        style={{ height: 16, width: 16, resizeMode: 'contain' }}
+                      />
+                    </View>
+                  </View>
+                ))
+              )}
             </View>
 
-            <View style={{ gap: 10, justifyContent: 'space-between' }}>
-              <View style={{ marginLeft: 0 }}>
+            <View style={{ gap: 10 }}>
+              <View>
                 <Text style={styles.address1}>
                   {origin ? origin.address_line1 : 'Vị trí của bạn'}
                 </Text>
@@ -135,9 +152,11 @@ const Maps = () => {
                   {origin ? origin.address_line2 : userLocation.address_line2}
                 </Text>
               </View>
-              <View style={{ marginLeft: 0 }}>
+              <View
+                style={{ marginLeft: 0, gap: 10, justifyContent: 'center' }}
+              >
                 {destination.map((item, index) => (
-                  <View key={index}>
+                  <View key={index} style={{ height: 60 }}>
                     <Text style={styles.address1}>{item?.address_line1}</Text>
                     <Text style={styles.address2} numberOfLines={2}>
                       {item?.address_line2}
@@ -154,12 +173,17 @@ const Maps = () => {
               <Text style={styles.tripEstimate}>Giá dự kiến:</Text>
             </View>
             <View>
-              <Text>10km</Text>
-              <Text>10p</Text>
+              <Text>{(data?.data?.distance as number)?.toFixed(2)} km</Text>
+              <Text>{data?.data?.duration}</Text>
               <Text
                 style={{ color: '#00aa13', fontWeight: '600', fontSize: 16 }}
               >
-                50.000 vnđ
+                {(
+                  Math.round(
+                    (11000 + (data?.data?.distance - 1) * 3800) / 100
+                  ) * 100
+                ).toLocaleString('vi-VN')}{' '}
+                đ
               </Text>
             </View>
           </View>
@@ -201,7 +225,14 @@ const Maps = () => {
               Đặt xe
             </Text>
             <View style={{ flexDirection: 'row', gap: 10 }}>
-              <Text style={styles.tripTotal}>₫ 50.000</Text>
+              <Text style={styles.tripTotal}>
+                ₫{' '}
+                {(
+                  Math.round(
+                    (11000 + (data?.data?.distance - 1) * 3800) / 100
+                  ) * 100
+                ).toLocaleString('vi-VN')}
+              </Text>
               <FontAwesome name='arrow-circle-right' size={24} color='#fff' />
             </View>
           </TouchableOpacity>
@@ -232,7 +263,7 @@ const styles = StyleSheet.create({
     height: '50%',
   },
   horizontalDivider: {
-    height: 36,
+    height: 35,
     left: 12,
     borderStyle: 'dashed',
     borderLeftWidth: 1,
@@ -245,7 +276,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F96B00',
-    paddingVertical: 3.5,
+    paddingVertical: 4,
     borderRadius: 100,
     width: 24,
   },

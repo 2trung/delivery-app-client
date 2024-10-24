@@ -13,11 +13,18 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import useLocation from '@/store/locationSlice'
 import { icons, images } from '@/constants'
 import { useQuery } from '@tanstack/react-query'
-import { getFoodCollections, getNearbyRestaurants } from '@/api/foodAPI'
+import {
+  getFoodCollections,
+  getNearbyRestaurants,
+  getFlashSaleFood,
+  discoverRestaurant,
+} from '@/api/foodAPI'
 import { useRouter } from 'expo-router'
 import { useEffect } from 'react'
 import HorizontalRestaurantCard from '@/components/HorizontalRestaurantCard'
 import VerticalRestaurantCard from '@/components/VerticalRestaurantCard'
+import HorizontalFoodCard from '@/components/HorizontalFoodCard'
+import { FoodCollection, FoodFlashSale, Restaurant } from '@/types/type'
 
 const FoodHome = () => {
   const { userLocation } = useLocation()
@@ -44,6 +51,71 @@ const FoodHome = () => {
     },
     enabled: true,
   })
+
+  const { data: flashSaleFoodData } = useQuery({
+    queryKey: ['flashSaleFood'],
+    queryFn: () => {
+      return getFlashSaleFood()
+    },
+    enabled: true,
+  })
+
+  const { data: discoverRestaurantData } = useQuery({
+    queryKey: ['discoverRestaurant'],
+    queryFn: () => {
+      return discoverRestaurant(
+        userLocation.latitude,
+        userLocation.longitude,
+        1
+      )
+    },
+    enabled: true,
+  })
+
+  const selections = [
+    {
+      title: 'Bộ sưu tập các món ăn',
+      data: foodCollectionsData,
+      direction: 'horizontal',
+      renderItem: ({ item }: { item: FoodCollection }) => (
+        <View style={{ alignItems: 'center', paddingHorizontal: 10 }}>
+          <Image
+            source={{ uri: item.image }}
+            style={{
+              height: 70,
+              width: 70,
+              borderRadius: 100,
+            }}
+          />
+          <Text>{item.name}</Text>
+        </View>
+      ),
+    },
+    {
+      title: 'Quán ngon quanh đây',
+      data: nearByRestaurantsData?.data?.content,
+      direction: 'horizontal',
+      renderItem: ({ item }: { item: Restaurant }) => (
+        <VerticalRestaurantCard restaurant={item} />
+      ),
+    },
+    {
+      title: 'Flash sale',
+      data: flashSaleFoodData,
+      direction: 'horizontal',
+      renderItem: ({ item }: { item: FoodFlashSale }) => (
+        <HorizontalFoodCard food={item} />
+      ),
+    },
+    {
+      title: 'Khám phá quán mới',
+      data: discoverRestaurantData,
+      direction: 'vertical',
+      renderItem: ({ item }: { item: Restaurant }) => (
+        <HorizontalRestaurantCard restaurant={item} />
+      ),
+    },
+  ]
 
   return (
     <SafeAreaView style={styles.container}>
@@ -79,117 +151,28 @@ const FoodHome = () => {
           </TouchableOpacity>
         </View>
       </View>
-
       <Pressable style={styles.search}>
         <AntDesign name='search1' size={24} color='#494b4a' />
         <Text style={{ color: '#757575', fontSize: 14 }}>Bạn muốn ăn gì?</Text>
       </Pressable>
 
-      <Text style={styles.title}>Bộ sưu tập các món ăn</Text>
-      <View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{ flex: 0 }}
-        >
-          {foodCollectionsData &&
-            foodCollectionsData?.data?.map((collection: any) => (
-              <View
-                key={collection.id}
-                style={{ alignItems: 'center', paddingHorizontal: 10 }}
-              >
-                <Image
-                  source={{ uri: collection.image }}
-                  style={{
-                    height: 70,
-                    width: 70,
-                    borderRadius: 100,
-                  }}
-                />
-                <Text>{collection.name}</Text>
-              </View>
-            ))}
-        </ScrollView>
-      </View>
-      <Text style={styles.title}>Quán ngon quanh đây</Text>
       <FlatList
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        ItemSeparatorComponent={() => <View style={{ width: 20 }} />}
-        data={nearByRestaurantsData?.data?.content || []}
-        renderItem={({ item }) => <VerticalRestaurantCard restaurant={item} />}
-      />
-      {/* <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{ padding: 10 }}
-        > */}
-      {/* </ScrollView> */}
-
-      {/* <View>
-        <View
-          style={{
-            borderRadius: 20,
-            width: 310,
-            height: 140,
-            elevation: 5,
-            backgroundColor: '#fff',
-            marginBottom: 10,
-            flexDirection: 'row',
-          }}
-        >
-          <Image
-            source={{
-              uri: 'https://media.be.com.vn/bizops/image/fb93cc00-8750-11ee-8e31-f638ae20f033/original',
-            }}
-            style={{
-              height: 140,
-              width: 140,
-              resizeMode: 'cover',
-              borderRadius: 20,
-            }}
-          />
-          <View
-            style={{
-              padding: 12,
-              flex: 1,
-              justifyContent: 'space-between',
-            }}
-          >
-            <View style={{ gap: 6 }}>
-              <Text style={{ fontSize: 12, color: '#525453' }}>
-                0.2 km • 12-15 phút
-              </Text>
-              <Text
-                numberOfLines={2}
-                style={{ fontWeight: '700', fontSize: 16 }}
-              >
-                Phở Bò
-              </Text>
-              <Text
-                numberOfLines={1}
-                style={{ fontSize: 12, color: '#494b4a', fontWeight: '600' }}
-              >
-                Phở Bò Nam Định - Bùi Huy Bích
-              </Text>
-            </View>
-            <View
-              style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}
-            >
-              <Text style={{ fontSize: 12 }}>15.000đ</Text>
-              <Text
-                style={{
-                  textDecorationLine: 'line-through',
-                  color: '#494a4a',
-                  fontSize: 12,
-                }}
-              >
-                20.000đ
-              </Text>
-            </View>
+        showsVerticalScrollIndicator={false}
+        data={selections}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item }) => (
+          <View>
+            <Text style={styles.title}>{item.title}</Text>
+            <FlatList<any>
+              horizontal={item.direction === 'horizontal'}
+              showsHorizontalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View style={{ width: 20 }} />}
+              data={item.data || []}
+              renderItem={item.renderItem}
+            />
           </View>
-        </View>
-      </View> */}
+        )}
+      />
     </SafeAreaView>
   )
 }
