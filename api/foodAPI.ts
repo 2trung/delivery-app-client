@@ -31,7 +31,7 @@ const getNearbyRestaurants = async (latitude: number, longitude: number) => {
       longitude,
     },
   })
-  return response.data
+  return response.data.data.content
 }
 
 const getFlashSaleFood = async (): Promise<FoodFlashSale[]> => {

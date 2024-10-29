@@ -78,7 +78,7 @@ const FoodHome = () => {
       data: foodCollectionsData,
       direction: 'horizontal',
       renderItem: ({ item }: { item: FoodCollection }) => (
-        <View style={{ alignItems: 'center', paddingHorizontal: 10 }}>
+        <View style={{ alignItems: 'center', paddingHorizontal: 7 }}>
           <Image
             source={{ uri: item.image }}
             style={{
@@ -93,7 +93,7 @@ const FoodHome = () => {
     },
     {
       title: 'Quán ngon quanh đây',
-      data: nearByRestaurantsData?.data?.content,
+      data: nearByRestaurantsData,
       direction: 'horizontal',
       renderItem: ({ item }: { item: Restaurant }) => (
         <VerticalRestaurantCard restaurant={item} />
@@ -169,6 +169,15 @@ const FoodHome = () => {
               ItemSeparatorComponent={() => <View style={{ width: 20 }} />}
               data={item.data || []}
               renderItem={item.renderItem}
+              contentContainerStyle={{
+                paddingHorizontal: 16,
+                paddingVertical: 5,
+              }}
+              style={
+                item.direction === 'vertical'
+                  ? { paddingHorizontal: 16, gap: 10 }
+                  : {}
+              }
             />
           </View>
         )}
@@ -182,7 +191,7 @@ export default FoodHome
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
     paddingVertical: 10,
     backgroundColor: '#fff',
   },
@@ -217,6 +226,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: 16,
   },
   topLeftButtonGroupContainer: {
     flexDirection: 'row',
@@ -235,11 +245,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E8E8E8',
     gap: 10,
+    marginHorizontal: 16,
+    marginBottom: 10,
   },
   title: {
     fontSize: 16,
     fontWeight: '700',
-    marginTop: 20,
-    marginBottom: 15,
+    marginTop: 10,
+    marginBottom: 5,
+    paddingHorizontal: 16,
   },
 })

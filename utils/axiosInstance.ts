@@ -1,10 +1,9 @@
 import axios from 'axios'
 import { setItemAsync, getItemAsync, deleteItemAsync } from 'expo-secure-store'
 import useAuth from '@/store/authSlice'
-import { BASE_URL } from '@env'
 
 const instance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: process.env.EXPO_PUBLIC_BASE_URL,
 })
 
 instance.interceptors.request.use(
@@ -38,7 +37,7 @@ instance.interceptors.response.use(
         const refreshToken = await getItemAsync('refreshToken')
         if (refreshToken) {
           const refreshResponse = await axios.post(
-            `${BASE_URL}/auth/refresh-token`,
+            `${process.env.EXPO_PUBLIC_BASE_URL}/auth/refresh-token`,
             { refreshToken }
           )
           const { accessToken } = refreshResponse.data.data

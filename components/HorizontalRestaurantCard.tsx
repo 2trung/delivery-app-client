@@ -14,7 +14,8 @@ const HorizontalRestaurantCard = ({
       onPress={() =>
         router.navigate({
           pathname: '/food/Restaurant',
-          params: { id: restaurant.id },
+          // params: { id: restaurant.id },
+          params: { id: '73bed16c-5746-40c7-9312-947d3f7729fd' },
         })
       }
     >

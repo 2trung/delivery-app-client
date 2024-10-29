@@ -1,24 +1,36 @@
-import { View, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, StyleSheet, Pressable, Text } from 'react-native'
 
 interface RadioButtonProps {
   checked: boolean
+  label: string
   onChange: () => void
 }
 
-const RadioButton: React.FC<RadioButtonProps> = ({ checked, onChange }) => {
+const RadioButton: React.FC<RadioButtonProps> = ({
+  checked,
+  onChange,
+  label,
+}) => {
   return (
-    <TouchableOpacity
-      style={[styles.radioButtonContainer, checked && styles.checked]}
-      onPress={onChange}
-    >
-      {checked && <View style={styles.dot} />}
-    </TouchableOpacity>
+    <Pressable onPress={onChange} style={styles.container}>
+      <View style={[styles.radioButtonContainer, checked && styles.checked]}>
+        {checked && <View style={styles.dot} />}
+      </View>
+      <Text style={styles.label}>{label}</Text>
+    </Pressable>
   )
 }
 
 const styles = StyleSheet.create({
-  radioButtonContainer: {
+  container: {
     flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+    padding: 3,
+  },
+  label: { flexShrink: 1, fontWeight: '500' },
+  radioButtonContainer: {
+    // flexDirection: 'row',
     alignItems: 'center',
     width: 20,
     height: 20,

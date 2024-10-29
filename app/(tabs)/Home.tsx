@@ -113,7 +113,7 @@ const Home = () => {
             </View>
             <Text style={{ textAlign: 'center', marginTop: 5 }}>Đặt xe</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => route.push('/food/FoodOption')}>
+          <TouchableOpacity onPress={() => route.push('/food')}>
             <View
               style={{
                 backgroundColor: '#FAE3E2',

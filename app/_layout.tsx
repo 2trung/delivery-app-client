@@ -12,6 +12,7 @@ import * as Location from 'expo-location'
 import { StatusBar } from 'expo-status-bar'
 import { reverse } from '@/api/mapAPI'
 import { LatLng } from 'react-native-maps'
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 
 SplashScreen.preventAutoHideAsync()
 export default function RootLayout() {
@@ -51,7 +52,7 @@ export default function RootLayout() {
   }, [isLogin])
 
   return (
-    <ThemeProvider value={DefaultTheme}>
+    <BottomSheetModalProvider>
       <StatusBar style='dark' />
       <QueryClientProvider client={queryClient}>
         <Stack screenOptions={{ headerShown: false }}>
@@ -62,6 +63,6 @@ export default function RootLayout() {
           <Stack.Screen name='+not-found' />
         </Stack>
       </QueryClientProvider>
-    </ThemeProvider>
+    </BottomSheetModalProvider>
   )
 }

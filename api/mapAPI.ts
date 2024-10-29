@@ -1,6 +1,8 @@
 import axios from '@/utils/axiosInstance'
-import { GEOAPIFY_KEY, GEOAPIFY_URL } from '@env'
 import { LatLng } from 'react-native-maps'
+
+const GEOAPIFY_URL = process.env.EXPO_PUBLIC_GEOAPIFY_URL
+const GEOAPIFY_KEY = process.env.EXPO_PUBLIC_GEOAPIFY_KEY
 
 const autocomplete = async (input: string, userLocation: LatLng) => {
   const response = await axios.get('/autocomplete', {

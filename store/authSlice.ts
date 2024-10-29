@@ -3,8 +3,6 @@ import * as SecureStore from 'expo-secure-store'
 import axios from 'axios'
 import { BaseApiResponse } from '../shared/baseApiResponse'
 import { UserDataResponse } from '../shared/userDataResponse'
-import { BASE_URL } from '@env'
-
 interface AuthState {
   isLogin: boolean
   phoneNumber: string
@@ -41,7 +39,7 @@ interface AuthState {
 }
 
 const axiosInstance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: process.env.EXPO_PUBLIC_BASE_URL,
 })
 
 const createAuth = create<AuthState>((set) => ({

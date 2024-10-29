@@ -249,7 +249,7 @@ const FoodOption = () => {
               <View style={{ gap: 16 }}>
                 {customize.options.map((option) =>
                   customize.maximumChoices === 1 ? (
-                    <View style={styles.optionContainer}>
+                    <View style={styles.optionContainer} key={option.id}>
                       <View style={styles.option}>
                         <RadioButton
                           key={option.id}
@@ -269,7 +269,7 @@ const FoodOption = () => {
                       </Text>
                     </View>
                   ) : (
-                    <View style={styles.optionContainer}>
+                    <View style={styles.optionContainer} key={option.id}>
                       <View style={styles.option}>
                         <Checkbox
                           key={option.id}

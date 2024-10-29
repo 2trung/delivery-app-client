@@ -3,11 +3,9 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native'
 const VerticalFoodCard = ({
   food,
   handleAddButtonPress,
-  setCurrentFood,
 }: {
   food: Food
-  handleAddButtonPress: () => void
-  setCurrentFood: (food: Food) => void
+  handleAddButtonPress: (food: Food) => void
 }) => {
   return (
     <View
@@ -26,7 +24,8 @@ const VerticalFoodCard = ({
           style={{
             fontWeight: '700',
             fontSize: 16,
-            height: 40,
+            // lineHeight: 24,
+            height: 48,
           }}
         >
           {food.name}
@@ -51,10 +50,7 @@ const VerticalFoodCard = ({
       </View>
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => {
-          setCurrentFood(food)
-          handleAddButtonPress()
-        }}
+        onPress={() => handleAddButtonPress(food)}
       >
         <Text style={{ color: '#00880c', fontWeight: '800' }}>Thêm vào</Text>
       </TouchableOpacity>

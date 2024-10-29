@@ -5,7 +5,14 @@ export default function FoodLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name='index' />
       <Stack.Screen name='Restaurant' />
-      <Stack.Screen name='FoodOption' />
+      <Stack.Screen
+        name='(modal)/CustomizeFood'
+        options={{
+          presentation: 'modal',
+          headerTitle: 'Tuỳ chỉnh món ăn',
+          headerShown: true,
+        }}
+      />
     </Stack>
   )
 }
