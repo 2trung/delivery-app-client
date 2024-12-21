@@ -73,7 +73,7 @@ const Login = () => {
       </View>
       <View style={{ marginBottom: 10 }}>
         <Text style={styles.title}>Đăng nhập tài khoản</Text>
-        <Text>Hãy nhập mật khẩu để đăng nhâp tài khoản của bạn.</Text>
+        <Text>Hãy nhập mật khẩu để đăng nhập tài khoản của bạn.</Text>
       </View>
       <View>
         <TextInput

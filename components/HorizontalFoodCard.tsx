@@ -1,9 +1,18 @@
 import { FoodFlashSale } from '@/types/type'
-import { View, Text, Image, StyleSheet } from 'react-native'
+import { View, Text, Image, StyleSheet, Pressable } from 'react-native'
+import { useRouter } from 'expo-router'
 
 const HorizontalFoodCard = ({ food }: { food: FoodFlashSale }) => {
+  const router = useRouter()
   return (
-    <View>
+    <Pressable
+      onPress={() =>
+        router.navigate({
+          pathname: '/food/Restaurant',
+          params: { id: food.restaurantId, foodId: food.id },
+        })
+      }
+    >
       <View style={styles.container}>
         <Image
           source={{
@@ -42,7 +51,7 @@ const HorizontalFoodCard = ({ food }: { food: FoodFlashSale }) => {
           </View>
         </View>
       </View>
-    </View>
+    </Pressable>
   )
 }
 

@@ -13,12 +13,13 @@ import { StatusBar } from 'expo-status-bar'
 import { reverse } from '@/api/mapAPI'
 import { LatLng } from 'react-native-maps'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
+import stompClient from '@/utils/stompClient'
+import { StripeProvider } from '@stripe/stripe-react-native'
 
-SplashScreen.preventAutoHideAsync()
 export default function RootLayout() {
   const router = useRouter()
   const queryClient = new QueryClient()
-  const { getUser } = useUser()
+  const { getUser, user } = useUser()
   const { isLogin } = useAuth()
   const { setUserLocation } = useLocation()
 
@@ -43,26 +44,43 @@ export default function RootLayout() {
   }, [])
 
   useEffect(() => {
+    SplashScreen.preventAutoHideAsync()
     if (!isLogin) {
-      if (router.canGoBack()) router.replace('../')
-      else router.replace('/')
+      try {
+        router.replace('/')
+      } catch {
+        router.replace('../')
+      }
     } else router.replace('/(tabs)/Home')
-    // router.replace('/(tabs)/Home')
+    // router.replace({
+    //   pathname: '/chat/[orderId]',
+    //   params: {
+    //     orderId: '1',
+    //   },
+    // })
     SplashScreen.hideAsync()
   }, [isLogin])
 
   return (
-    <BottomSheetModalProvider>
-      <StatusBar style='dark' />
-      <QueryClientProvider client={queryClient}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name='index' />
-          <Stack.Screen name='(auth)' />
-          <Stack.Screen name='(tabs)' />
-          <Stack.Screen name='booking_bike' />
-          <Stack.Screen name='+not-found' />
-        </Stack>
-      </QueryClientProvider>
-    </BottomSheetModalProvider>
+    <StripeProvider
+      publishableKey={process.env.EXPO_PUBLIC_STRIPE_KEY as string}
+    >
+      <BottomSheetModalProvider>
+        <StatusBar style='dark' />
+        <QueryClientProvider client={queryClient}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name='index' />
+            <Stack.Screen name='(auth)' />
+            <Stack.Screen name='(tabs)' />
+            <Stack.Screen name='ride' />
+            <Stack.Screen name='food' />
+            <Stack.Screen name='delivery' />
+            <Stack.Screen name='order' />
+            <Stack.Screen name='chat' />
+            <Stack.Screen name='+not-found' />
+          </Stack>
+        </QueryClientProvider>
+      </BottomSheetModalProvider>
+    </StripeProvider>
   )
 }

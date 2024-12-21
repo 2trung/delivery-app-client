@@ -1,4 +1,10 @@
-import { AntDesign, Feather, Fontisto, Ionicons } from '@expo/vector-icons'
+import {
+  AntDesign,
+  Feather,
+  FontAwesome6,
+  Fontisto,
+  Ionicons,
+} from '@expo/vector-icons'
 import {
   Text,
   View,
@@ -20,14 +26,22 @@ import {
   discoverRestaurant,
 } from '@/api/foodAPI'
 import { useRouter } from 'expo-router'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import HorizontalRestaurantCard from '@/components/HorizontalRestaurantCard'
 import VerticalRestaurantCard from '@/components/VerticalRestaurantCard'
 import HorizontalFoodCard from '@/components/HorizontalFoodCard'
 import { FoodCollection, FoodFlashSale, Restaurant } from '@/types/type'
+import useCartStore from '@/store/cartSlice'
+import Animated, {
+  useSharedValue,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated'
+import FoodSkeleton from '@/components/FoodSkeleton'
 
 const FoodHome = () => {
   const { userLocation } = useLocation()
+  const { restaurant, foods } = useCartStore()
   const router = useRouter()
   const {
     data: foodCollectionsData,
@@ -40,6 +54,7 @@ const FoodHome = () => {
     },
     enabled: true,
   })
+
   const {
     data: nearByRestaurantsData,
     isLoading: isNearByRestaurantsLoading,
@@ -60,17 +75,19 @@ const FoodHome = () => {
     enabled: true,
   })
 
-  const { data: discoverRestaurantData } = useQuery({
-    queryKey: ['discoverRestaurant'],
-    queryFn: () => {
-      return discoverRestaurant(
-        userLocation.latitude,
-        userLocation.longitude,
-        1
-      )
-    },
-    enabled: true,
-  })
+  const { data: discoverRestaurantData, isLoading: discoverLoading } = useQuery(
+    {
+      queryKey: ['discoverRestaurant'],
+      queryFn: () => {
+        return discoverRestaurant(
+          userLocation.latitude,
+          userLocation.longitude,
+          1
+        )
+      },
+      enabled: true,
+    }
+  )
 
   const selections = [
     {
@@ -78,7 +95,7 @@ const FoodHome = () => {
       data: foodCollectionsData,
       direction: 'horizontal',
       renderItem: ({ item }: { item: FoodCollection }) => (
-        <View style={{ alignItems: 'center', paddingHorizontal: 7 }}>
+        <View style={{ alignItems: 'center', paddingHorizontal: 5 }}>
           <Image
             source={{ uri: item.image }}
             style={{
@@ -87,7 +104,7 @@ const FoodHome = () => {
               borderRadius: 100,
             }}
           />
-          <Text>{item.name}</Text>
+          <Text style={{ fontWeight: '500' }}>{item.name}</Text>
         </View>
       ),
     },
@@ -117,6 +134,21 @@ const FoodHome = () => {
     },
   ]
 
+  const cartPosition = useSharedValue(0)
+
+  const handleScrollBegin = () => {
+    cartPosition.value = withTiming(100, {
+      duration: 200,
+      easing: Easing.ease,
+    })
+  }
+
+  const handleScrollEnd = () => {
+    cartPosition.value = withTiming(0, {
+      duration: 300,
+      easing: Easing.ease,
+    })
+  }
   return (
     <SafeAreaView style={styles.container}>
       {/* Nút phía trên */}
@@ -156,32 +188,72 @@ const FoodHome = () => {
         <Text style={{ color: '#757575', fontSize: 14 }}>Bạn muốn ăn gì?</Text>
       </Pressable>
 
-      <FlatList
-        showsVerticalScrollIndicator={false}
-        data={selections}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
-          <View>
-            <Text style={styles.title}>{item.title}</Text>
-            <FlatList<any>
-              horizontal={item.direction === 'horizontal'}
-              showsHorizontalScrollIndicator={false}
-              ItemSeparatorComponent={() => <View style={{ width: 20 }} />}
-              data={item.data || []}
-              renderItem={item.renderItem}
-              contentContainerStyle={{
-                paddingHorizontal: 16,
-                paddingVertical: 5,
-              }}
-              style={
-                item.direction === 'vertical'
-                  ? { paddingHorizontal: 16, gap: 10 }
-                  : {}
-              }
-            />
-          </View>
-        )}
-      />
+      {isNearByRestaurantsLoading ||
+      isFoodCollectionsLoading ||
+      discoverLoading ? (
+        <FoodSkeleton />
+      ) : (
+        <FlatList
+          showsVerticalScrollIndicator={false}
+          data={selections}
+          onScrollBeginDrag={handleScrollBegin}
+          onMomentumScrollEnd={handleScrollEnd}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View>
+              <Text style={styles.title}>{item.title}</Text>
+              <FlatList<any>
+                horizontal={item.direction === 'horizontal'}
+                showsHorizontalScrollIndicator={false}
+                ItemSeparatorComponent={() => <View style={{ width: 20 }} />}
+                data={item.data || []}
+                renderItem={item.renderItem}
+                contentContainerStyle={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 5,
+                }}
+                style={
+                  item.direction === 'vertical'
+                    ? { paddingHorizontal: 16, gap: 10 }
+                    : {}
+                }
+              />
+            </View>
+          )}
+        />
+      )}
+      {foods.length > 0 && (
+        <Animated.View
+          style={{
+            transform: [{ translateY: cartPosition }],
+          }}
+        >
+          <TouchableOpacity
+            style={styles.cartButton}
+            onPress={() => router.push('/food/Cart')}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>
+                {foods.length} món
+              </Text>
+              <Text style={{ color: '#fff', fontSize: 12 }} numberOfLines={1}>
+                {restaurant?.name}
+              </Text>
+            </View>
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
+            >
+              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '500' }}>
+                {foods
+                  .reduce((acc, food) => acc + food.total, 0)
+                  .toLocaleString('vi')}
+                đ
+              </Text>
+              <FontAwesome6 name='bag-shopping' size={20} color='#fff' />
+            </View>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
     </SafeAreaView>
   )
 }
@@ -192,7 +264,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     // paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingTop: 10,
     backgroundColor: '#fff',
   },
   closeButton: {
@@ -254,5 +326,18 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 5,
     paddingHorizontal: 16,
+  },
+  cartButton: {
+    position: 'absolute',
+    bottom: 0,
+    backgroundColor: '#00880C',
+    flexDirection: 'row',
+    padding: 10,
+    paddingHorizontal: 20,
+    justifyContent: 'space-between',
+    margin: 16,
+    borderRadius: 100,
+    alignItems: 'center',
+    gap: 16,
   },
 })

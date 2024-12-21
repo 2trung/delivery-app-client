@@ -1,3 +1,4 @@
+import { OrderType, Route, Weight } from '@/types/type'
 import axios from '@/utils/axiosInstance'
 import { LatLng } from 'react-native-maps'
 
@@ -37,10 +38,18 @@ const reverse = async (coordinate: LatLng) => {
 const getRoute = async (
   origin: LatLng,
   destination: LatLng,
-  stops: LatLng[]
-) => {
-  const response = await axios.post('/route', { origin, destination, stops })
-  return response.data
+  stops: LatLng[],
+  orderType: OrderType,
+  productSize?: Weight
+): Promise<Route> => {
+  const response = await axios.post('/route', {
+    origin,
+    destination,
+    stops,
+    orderType,
+    productSize,
+  })
+  return response.data.data
 }
 
 export { autocomplete, reverse, getRoute }

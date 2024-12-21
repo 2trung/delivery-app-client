@@ -1,24 +1,18 @@
 import { create } from 'zustand'
-
-interface Location {
-  address_line1: string
-  address_line2: string
-  latitude: number
-  longitude: number
-}
+import { LocationDetail } from '../types/type'
 
 interface LocationState {
-  userLocation: Location
-  origin: Location | null
-  destination: (Location | null)[]
-  searchResults: Location[]
-  setUserLocation: (location: Location) => void
+  userLocation: LocationDetail
+  origin: LocationDetail | null
+  destination: (LocationDetail | null)[]
+  searchResults: LocationDetail[]
+  setUserLocation: (location: LocationDetail) => void
   addDestination: () => void
-  setDestination: (location: Location, index: number) => void
+  setDestination: (location: LocationDetail, index: number) => void
   removeDestination: (index: number) => void
   removeDestinations: () => void
   clearDestination: (index: number) => void
-  setOrigin: (location?: Location) => void
+  setOrigin: (location?: LocationDetail) => void
 }
 
 const createLocation = create<LocationState>((set) => ({

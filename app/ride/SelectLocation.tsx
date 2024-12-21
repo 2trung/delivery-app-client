@@ -176,12 +176,12 @@ const SelectLocation = () => {
       backAction
     )
 
-    return () => backHandler.remove() // Gỡ bỏ sự kiện khi component bị hủy
+    return () => backHandler.remove()
   }, [])
 
   useEffect(() => {
     if (destination.every(Boolean)) {
-      router.push('/booking_bike/Maps')
+      router.push('/ride/Maps')
     }
   }, [destination, origin])
   return (

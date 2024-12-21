@@ -1,20 +1,37 @@
 import { create } from 'zustand'
-import { Food } from '@/types/type'
+import { Food, FoodWithQuantity, RestaurantDetail } from '@/types/type'
 
 interface FoodStore {
+  resraurant: RestaurantDetail | null
   food: Food | null
   quantity: number
   total: number
+  type: 'ADD' | 'EDIT'
+  setRestaurant: (restaurant: RestaurantDetail | null) => void
   setFood: (food: Food) => void
+  setEditingFood: (food: FoodWithQuantity, type: 'ADD' | 'EDIT') => void
   onChangeQuantity: (type: 'INCREASE' | 'DECREASE') => void
   onChangeOption: (customizeId: string, optionId: string) => void
   isValid: () => boolean
 }
 export const foodSlice = create<FoodStore>((set) => ({
+  resraurant: null,
   food: null,
   quantity: 0,
   total: 0,
-  setFood: (food) => set(() => ({ food, quantity: 1, total: food.price })),
+  type: 'ADD',
+  setRestaurant: (restaurant: RestaurantDetail | null) => {
+    set(() => ({ resraurant: restaurant }))
+  },
+  setFood: (food) =>
+    set(() => ({ food, quantity: 1, total: food.price, type: 'ADD' })),
+  setEditingFood: (food, type) =>
+    set(() => ({
+      food,
+      quantity: food.quantity,
+      total: food.total * food.quantity,
+      type,
+    })),
   onChangeOption: (customizeId, optionId) =>
     set((state) => {
       if (!state.food) return {}

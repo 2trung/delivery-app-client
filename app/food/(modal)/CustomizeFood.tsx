@@ -5,24 +5,97 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ToastAndroid,
+  Alert,
 } from 'react-native'
 import Checkbox from '@/components/Checkbox'
 import RadioButton from '@/components/RadioButton'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Dimensions } from 'react-native'
 import { TextInput } from 'react-native-paper'
 import { AntDesign } from '@expo/vector-icons'
 import useFood from '@/store/foodSlice'
+import useCart from '@/store/cartSlice'
+import { useRouter } from 'expo-router'
+import { FoodWithQuantity } from '@/types/type'
 
 const CustomizeFood = () => {
-  const { onChangeOption, food, total, quantity, onChangeQuantity, isValid } =
-    useFood()
-  const handleAddToCart = () => {
+  const [editingFood, setEditingFood] = useState<FoodWithQuantity | null>(null)
+  const router = useRouter()
+  const {
+    onChangeOption,
+    food,
+    total,
+    quantity,
+    onChangeQuantity,
+    isValid,
+    type,
+    resraurant: displayingRestaurant,
+  } = useFood()
+  const {
+    restaurant: cartRestaurant,
+    addFood,
+    setRestaurant,
+    clearCart,
+    removeFood,
+  } = useCart()
+
+  const showAlert = () => {
+    return new Promise((resolve) => {
+      Alert.alert(
+        'Thông báo',
+        'Bạn đang chọn món ăn từ nhà hàng khác, bạn có muốn xóa giỏ hàng hiện tại không?',
+        [
+          {
+            text: 'Không',
+            style: 'cancel',
+            onPress: () => {
+              return
+            },
+          },
+          {
+            text: 'Có',
+            onPress: () => {
+              clearCart()
+            },
+          },
+        ],
+        { cancelable: false }
+      )
+    })
+  }
+  const handleAddToCart = async () => {
+    if (
+      cartRestaurant &&
+      displayingRestaurant &&
+      cartRestaurant.id !== displayingRestaurant.id
+    )
+      await showAlert()
+    if (!cartRestaurant) {
+      setRestaurant(displayingRestaurant)
+    }
     const isValidFood = isValid()
-    if (isValidFood) {
-      console.log('Add to cart')
+    if (food && isValidFood) {
+      if (type === 'EDIT' && editingFood) {
+        removeFood(editingFood)
+      }
+      addFood({ ...food, quantity, total })
+      router.back()
+    } else {
+      ToastAndroid.show('Vui lòng chọn đủ các tùy chọn', ToastAndroid.SHORT)
     }
   }
+  useEffect(() => {
+    if (type === 'EDIT' && food) {
+      setEditingFood({
+        ...food,
+        quantity: (food as FoodWithQuantity).quantity,
+        total:
+          (food as FoodWithQuantity).total *
+          (food as FoodWithQuantity).quantity,
+      })
+    }
+  }, [])
 
   if (!food) return null
   return (
@@ -145,9 +218,13 @@ const CustomizeFood = () => {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.addButton}>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => handleAddToCart()}
+        >
           <Text style={{ color: '#fff', fontWeight: '800' }}>
-            {`Thêm vào giỏ hàng - ${(total * quantity).toLocaleString('vi')}đ`}
+            {type === 'EDIT' ? 'Cập nhật giỏ hàng' : 'Thêm vào giỏ hàng'}
+            {` - ${(total * quantity).toLocaleString('vi')}đ`}
           </Text>
         </TouchableOpacity>
       </View>

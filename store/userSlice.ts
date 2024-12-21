@@ -4,15 +4,18 @@ import axiosInstance from '../utils/axiosInstance'
 import useAuthSlice from './authSlice'
 
 type User = {
-  id: number
+  id: string
   email: string
   username: string
   phoneNumber: string
+  name: string
+  avatar: string
 }
 type UserStore = {
   user: User | null
   getUser: () => Promise<void>
   logout: () => void
+  setUser: (user: User) => void
 }
 
 const createUser = create<UserStore>((set) => ({
@@ -30,6 +33,7 @@ const createUser = create<UserStore>((set) => ({
     useAuthSlice.getState().removeAuth()
     set(() => ({ user: null }))
   },
+  setUser: (user) => set(() => ({ user })),
 }))
 
 export default createUser
